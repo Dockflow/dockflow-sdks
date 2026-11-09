@@ -40,6 +40,8 @@ jobs:
           packages-dir: build/python/dist/
           skip-existing: true
           verbose: true
+          # Called from sync.yml, the attestation names sync.yml while the trusted publisher is publish.yml.
+          attestations: false
 
   nuget:
     runs-on: ubuntu-latest
