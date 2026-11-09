@@ -10,13 +10,13 @@ Official client libraries for the [Dockflow API](https://docs.dockflow.com/api),
 | Java | `com.dockflow:dockflow-sdk` (Maven Central) |
 | PHP | `composer require dockflow/dockflow-sdk` |
 
-Authenticate with an API key (`Authorization: <key>`). The UAT sandbox is `https://uat.dockflow.com`, production is `https://api.dockflow.com`.
+Authenticate with a Dockflow API key; the SDKs send it as `Authorization: Bearer <key>`. The UAT sandbox is `https://uat.dockflow.com`, production is `https://api.dockflow.com`.
 
 ## How this repo works
 
 - `spec/v3.json` is the published Dockflow v3 contract (`https://api.dockflow.com/v3/openapi.json`).
 - `scripts/generate.sh` generates every SDK into `build/` with openapi-generator.
-- `scripts/normalise.py` narrows two "one item or a list" unions to their list form, which the API accepts and which every generator can compile.
+- `scripts/normalise.py` narrows two "one item or a list" unions to their list form (the API accepts it, every generator can compile it) and gives operations their public names: `UpstreamApi.getUpstream`, `TradeflowsApi.createTradeflows` / `deleteTradeflow`, `DocumentsApi.*`, `WidgetApi.searchWidget`.
 
 ## Releases
 
