@@ -1,0 +1,1743 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Dockflow v3 API",
+        "version": "3.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.dockflow.com",
+            "description": "Production"
+        },
+        {
+            "url": "https://uat.dockflow.com",
+            "description": "UAT"
+        }
+    ],
+    "security": [
+        {
+            "TridentToken": []
+        }
+    ],
+    "paths": {
+        "/v3/downstream/documents/types": {
+            "get": {
+                "operationId": "documents-types",
+                "summary": "List document types",
+                "tags": [
+                    "TridentDocument"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The document types a document can be uploaded as.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "type",
+                                            "description"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/downstream/documents": {
+            "post": {
+                "operationId": "trident-document-post",
+                "summary": "Upload a document to a tradeflow",
+                "tags": [
+                    "TridentDocument"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DocumentUpload"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "The document was stored on the tradeflow.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "tradeflow_reference": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "document_type": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        },
+                                        "filetype": {
+                                            "type": "string"
+                                        },
+                                        "container_reference": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "created_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "tradeflow_reference",
+                                        "document_type",
+                                        "filename",
+                                        "filetype",
+                                        "container_reference",
+                                        "created_at"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Failed to create document."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON object."
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON string."
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/downstream/documents/{reference}": {
+            "get": {
+                "operationId": "trident-document-get",
+                "summary": "List the documents of a tradeflow",
+                "tags": [
+                    "TridentDocument"
+                ],
+                "parameters": [
+                    {
+                        "name": "reference",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The documents attached to the tradeflow.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "filetype": {
+                                                        "type": "string"
+                                                    },
+                                                    "input_name": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "version": {
+                                                        "type": "integer"
+                                                    },
+                                                    "document_type": {
+                                                        "type": [
+                                                            "object",
+                                                            "null"
+                                                        ],
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name",
+                                                            "description"
+                                                        ]
+                                                    },
+                                                    "metadata": {
+                                                        "type": [
+                                                            "object",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "created_at": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "updated_at": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "filetype",
+                                                    "input_name",
+                                                    "version",
+                                                    "document_type",
+                                                    "metadata",
+                                                    "created_at",
+                                                    "updated_at"
+                                                ]
+                                            }
+                                        },
+                                        "tradeflow_reference": {
+                                            "type": "string"
+                                        },
+                                        "count": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "tradeflow_reference",
+                                        "count"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No tradeflow with this reference belongs to the token's entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Tradeflow not found."
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "trident-document-delete",
+                "summary": "Delete a document",
+                "tags": [
+                    "TridentDocument"
+                ],
+                "parameters": [
+                    {
+                        "name": "reference",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Failed to delete document."
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "The document was deleted."
+                    },
+                    "404": {
+                        "description": "No document with this id is visible to the token's entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Document not found."
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "trident-document-patch",
+                "summary": "Update a document",
+                "tags": [
+                    "TridentDocument"
+                ],
+                "parameters": [
+                    {
+                        "name": "reference",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DocumentUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Failed to update document."
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "The updated document.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "filetype": {
+                                            "type": "string"
+                                        },
+                                        "input_name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "version": {
+                                            "type": "integer"
+                                        },
+                                        "document_type": {
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ],
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "description"
+                                            ]
+                                        },
+                                        "metadata": {
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "created_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updated_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "filetype",
+                                        "input_name",
+                                        "version",
+                                        "document_type",
+                                        "metadata",
+                                        "created_at",
+                                        "updated_at"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON object."
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON string."
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No document with this id is visible to the token's entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Document not found."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/downstream/tradeflows": {
+            "post": {
+                "operationId": "tridentDownstream.post",
+                "summary": "Upsert tradeflows",
+                "tags": [
+                    "TridentDownstream"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/DownstreamTradeflow"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/DownstreamTradeflow"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "The tradeflows passed validation and are queued for import.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "const": "queued"
+                                        },
+                                        "tradeflows": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "tradeflow_reference": {
+                                                        "type": "string"
+                                                    },
+                                                    "warnings": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "tradeflow_reference",
+                                                    "warnings"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "status",
+                                        "tradeflows"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {},
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON object."
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON string."
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/downstream/tradeflows/{tradeflow_reference}": {
+            "delete": {
+                "operationId": "tridentDownstream.delete",
+                "summary": "Delete a tradeflow",
+                "tags": [
+                    "TridentDownstream"
+                ],
+                "parameters": [
+                    {
+                        "name": "tradeflow_reference",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "confirm",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hard",
+                        "in": "query",
+                        "description": "true deletes the tradeflow permanently. Default: it is deactivated.",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "500": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Failed to process deletion."
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "The tradeflow was deactivated, or deleted with `hard=true`. The reference `*`\ntargets every tradeflow and needs `confirm=PRODUCTION` on production.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Tradeflow deleted.",
+                                        "Tradeflow deactivated."
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No tradeflow with this reference belongs to the token's entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Tradeflow not found."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Bulk delete on production requires ?confirm=PRODUCTION parameter."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/upstream": {
+            "get": {
+                "operationId": "tridentUpstream.get",
+                "summary": "Poll upstream events",
+                "tags": [
+                    "TridentUpstream"
+                ],
+                "parameters": [
+                    {
+                        "name": "since",
+                        "in": "query",
+                        "description": "Only tradeflows changed after this ISO 8601 timestamp (exclusive), with an offset. Without since, cursor, tradeflow or container: the last 15 minutes.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tradeflow",
+                        "in": "query",
+                        "description": "Your tradeflow reference. Returns that tradeflow regardless of when it changed.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "container",
+                        "in": "query",
+                        "description": "A container number. Returns its tradeflows regardless of when they changed.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Keep only events of this category: MILESTONE, SHIPMENT or LOCATION.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "code",
+                        "in": "query",
+                        "description": "Keep only events whose code starts with this value. One of: GE, GN, AE, VD, VA, UV, GT, GD, GR, POS, A-BKD, A-RCS, A-DEP, A-ARR, A-RCF, A-NFD, A-DLV. Any other value returns 400.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "next_cursor from the previous page. Keep since identical across the pages of one cycle.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "in": "query",
+                        "description": "true (active only), false, or both. Default: active plus recently deactivated.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "Comma-separated blocks: events, locations, containers, shipment, vessels. Default: all but vessels.",
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "description": "Shape of `events`: `v3` (Dockflow milestones) or `dcsa-tnt-2.2` (DCSA Track & Trace 2.2). The rest of the record is identical.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "v3",
+                                "dcsa-tnt-2.2"
+                            ],
+                            "default": "v3"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Tradeflows per page, 1 to 1000. Default 50.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "failsafe",
+                        "in": "query",
+                        "description": "Set to 1 and Dockflow keeps your position per API key and filter set, so repeated identical polls skip nothing.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "0",
+                                "1"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A page of tradeflows matching the filters. Pass `next_cursor` back to read\nthe next page; it is null on the last one.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UpstreamRecord"
+                                            }
+                                        },
+                                        "next_cursor": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "next_cursor"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "category must be one of: MILESTONE, SHIPMENT, LOCATION"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "per_page must be between 1 and 1000"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "since must be a valid ISO8601 timestamp"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/widget/search": {
+            "get": {
+                "operationId": "widget-search",
+                "description": "Matches a container number, booking or bill of lading within the token's entity and\nreturns the best match.",
+                "summary": "Search a shipment for the embeddable tracking widget",
+                "tags": [
+                    "WidgetSearch"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": true,
+                        "description": "Container number, booking or bill of lading reference.",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 4,
+                            "maxLength": 64
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The best match. Every field is null or empty when nothing matches.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WidgetSearchResult"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "TridentToken": {
+                "type": "http",
+                "description": "A Trident token, `{env}_{entity-slug}_{secret}`.",
+                "scheme": "bearer"
+            }
+        },
+        "schemas": {
+            "DocumentUpdate": {
+                "type": "object",
+                "description": "Only the fields sent are changed.",
+                "properties": {
+                    "document_filename": {
+                        "type": "string"
+                    },
+                    "document_type": {
+                        "type": "string",
+                        "description": "A type name from GET /v3/downstream/documents/types. An unknown name leaves the type unchanged."
+                    },
+                    "container_reference": {
+                        "type": "string",
+                        "description": "Links the document to this container; an unknown reference unlinks it."
+                    }
+                },
+                "title": "DocumentUpdate"
+            },
+            "DocumentUpload": {
+                "type": "object",
+                "properties": {
+                    "tradeflow_reference": {
+                        "type": "string",
+                        "description": "The tradeflow to attach the document to.",
+                        "examples": [
+                            "PO4564268"
+                        ]
+                    },
+                    "document_extension": {
+                        "type": "string",
+                        "enum": [
+                            "pdf",
+                            "doc",
+                            "docx",
+                            "xls",
+                            "xlsx",
+                            "jpg",
+                            "jpeg",
+                            "png",
+                            "gif",
+                            "bmp",
+                            "tif",
+                            "tiff",
+                            "svg",
+                            "webp"
+                        ]
+                    },
+                    "document_payload_base64": {
+                        "type": "string",
+                        "description": "The file contents, base64-encoded."
+                    },
+                    "document_type": {
+                        "type": "string",
+                        "description": "A type name from GET /v3/downstream/documents/types. Unknown or omitted: no type."
+                    },
+                    "document_filename": {
+                        "type": "string",
+                        "description": "File name without extension, shown in Dockflow."
+                    },
+                    "container_reference": {
+                        "type": "string",
+                        "description": "Links the document to one container of the tradeflow."
+                    }
+                },
+                "required": [
+                    "tradeflow_reference",
+                    "document_extension",
+                    "document_payload_base64"
+                ],
+                "title": "DocumentUpload"
+            },
+            "DownstreamTradeflow": {
+                "type": "object",
+                "description": "A tradeflow to create, or to update when its tradeflow_reference already exists.",
+                "properties": {
+                    "tradeflow_reference": {
+                        "type": "string",
+                        "description": "Your unique reference for the tradeflow, for example a purchase order number.",
+                        "examples": [
+                            "PO4564268"
+                        ]
+                    },
+                    "container_reference": {
+                        "description": "Container numbers (ISO 6346), as a string, an array of strings, or objects with custom properties.",
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "examples": [
+                                    "ABCD1234567"
+                                ]
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "reference": {
+                                                    "type": "string",
+                                                    "examples": [
+                                                        "ABCD1234567"
+                                                    ]
+                                                },
+                                                "custom_properties": {
+                                                    "type": "object",
+                                                    "description": "Free-form key-value pairs stored on the container."
+                                                }
+                                            },
+                                            "required": [
+                                                "reference"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "container_references_complete": {
+                        "type": "boolean",
+                        "description": "When true, containers not listed are removed from the tradeflow. When omitted, the list is merged."
+                    },
+                    "bill_of_lading_reference": {
+                        "description": "Bill of lading number, with the carrier prefix, as a string or an array.",
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "examples": [
+                                    "MAEU123456789"
+                                ]
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "bill_of_lading_references_complete": {
+                        "type": "boolean",
+                        "description": "When true, bills of lading not listed are removed."
+                    },
+                    "booking_reference": {
+                        "description": "Booking number, as a string or an array.",
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ]
+                    },
+                    "booking_references_complete": {
+                        "type": "boolean",
+                        "description": "When true, bookings not listed are removed."
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "description": "Set to false to deactivate the tradeflow."
+                    },
+                    "carrier_name": {
+                        "type": "string",
+                        "examples": [
+                            "Maersk"
+                        ]
+                    },
+                    "carrier_scac": {
+                        "type": "string",
+                        "description": "Carrier SCAC. A hint for which carrier to ask first; other carriers are still tried.",
+                        "examples": [
+                            "MAEU"
+                        ]
+                    },
+                    "customer_name": {
+                        "type": "string",
+                        "description": "Adds one partner with the role customer."
+                    },
+                    "customer_reference": {
+                        "type": "string"
+                    },
+                    "partners": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "examples": [
+                                        "Best Forwarder BV"
+                                    ]
+                                },
+                                "role": {
+                                    "type": "string",
+                                    "examples": [
+                                        "forwarder"
+                                    ]
+                                },
+                                "reference": {
+                                    "type": "string",
+                                    "description": "The partner's own reference for this tradeflow."
+                                },
+                                "lead_contact": {
+                                    "type": "string",
+                                    "description": "Email or full name of an existing user at the partner."
+                                }
+                            },
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    },
+                    "partners_complete": {
+                        "type": "boolean",
+                        "description": "When true, partners not listed are removed."
+                    },
+                    "team_name": {
+                        "type": "string",
+                        "description": "Name of an existing team. Ignored when no team matches."
+                    },
+                    "lead_contact": {
+                        "type": "string",
+                        "description": "Email or full name of an existing user in your organisation. Ignored when no user matches."
+                    },
+                    "port_of_loading": {
+                        "type": "string",
+                        "description": "5-character UN/LOCODE.",
+                        "examples": [
+                            "BEANR"
+                        ]
+                    },
+                    "port_of_discharge": {
+                        "type": "string",
+                        "description": "5-character UN/LOCODE.",
+                        "examples": [
+                            "USLAX"
+                        ]
+                    },
+                    "estimated_time_of_departure": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "actual_time_of_departure": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "estimated_time_of_arrival": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "actual_time_of_arrival": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "vessel": {
+                        "type": "string"
+                    },
+                    "incoterms": {
+                        "type": "string",
+                        "examples": [
+                            "FOB"
+                        ]
+                    },
+                    "references": {
+                        "type": "object",
+                        "properties": {
+                            "house_bill_of_lading": {
+                                "type": "string"
+                            },
+                            "delivery_location": {
+                                "type": "string"
+                            },
+                            "delivery_event_date": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "events": {
+                        "type": "array",
+                        "description": "Your own events on the tradeflow.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "examples": [
+                                        "delivery at client"
+                                    ]
+                                },
+                                "container_reference": {
+                                    "type": "string"
+                                },
+                                "location_name": {
+                                    "type": "string",
+                                    "description": "5-character UN/LOCODE; any other value leaves the event without a location."
+                                },
+                                "event_date": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                },
+                                "actual": {
+                                    "type": "boolean",
+                                    "description": "Whether the event already happened (true) or is planned (false)."
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "event_date"
+                            ]
+                        }
+                    },
+                    "free_time_overrides": {
+                        "type": "array",
+                        "description": "Free-time overrides, upserted per scope. Unlisted scopes are untouched.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "dwell_type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "equipment_free_time_in_port",
+                                        "equipment_free_time_out_of_port",
+                                        "equipment_free_time_combined",
+                                        "storage_free_time",
+                                        "electricity_free_time"
+                                    ]
+                                },
+                                "free_days": {
+                                    "type": "integer",
+                                    "description": "Required unless cancelled is true."
+                                },
+                                "container_reference": {
+                                    "type": "string",
+                                    "description": "Scopes the override to one container. Absent means tradeflow-wide."
+                                },
+                                "cancelled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "dwell_type"
+                            ]
+                        }
+                    },
+                    "custom_references": {
+                        "type": "object",
+                        "description": "Flat key-value pairs you define. Values are stored as text; null or an empty string removes the key."
+                    },
+                    "mock_tracking": {
+                        "type": "object",
+                        "description": "UAT only: generates a synthetic journey. Ignored in production.",
+                        "properties": {
+                            "scenario": {
+                                "type": "string",
+                                "examples": [
+                                    "ocean_basic"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "tradeflow_reference"
+                ],
+                "title": "DownstreamTradeflow"
+            },
+            "UpstreamRecord": {
+                "type": "object",
+                "description": "One record per shipment of a tradeflow. The locations, containers, vessels, shipment and events blocks are present when requested with fields.",
+                "properties": {
+                    "version": {
+                        "type": "string",
+                        "examples": [
+                            "3.0.0"
+                        ]
+                    },
+                    "tradeflow_reference": {
+                        "type": "string",
+                        "examples": [
+                            "PO4564268"
+                        ]
+                    },
+                    "bill_of_lading": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "booking": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "additional_references": {
+                        "type": "object",
+                        "properties": {
+                            "bill_of_lading": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "booking": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "data_quality": {
+                        "type": "object",
+                        "properties": {
+                            "freshness_min": {
+                                "type": "integer"
+                            },
+                            "anomalies": {
+                                "type": "number"
+                            },
+                            "missed_milestones": {
+                                "type": "integer"
+                            },
+                            "has_live_data": {
+                                "type": "boolean"
+                            },
+                            "is_singular_shipment": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "properties": {
+                            "last_updated": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Keep since unchanged while following next_cursor; after the last page, use the highest value as the next since."
+                            },
+                            "carrier_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "carrier_scac": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "is_active": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "locations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "containers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "vessels": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "shipment": {
+                        "type": "object"
+                    },
+                    "events": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "required": [
+                    "version",
+                    "tradeflow_reference",
+                    "bill_of_lading",
+                    "booking",
+                    "additional_references",
+                    "data_quality",
+                    "metadata"
+                ],
+                "title": "UpstreamRecord"
+            },
+            "WidgetContainer": {
+                "type": "object",
+                "properties": {
+                    "reference": {
+                        "type": "string"
+                    },
+                    "type_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "type_group": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "length": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "latest_actual_milestone": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetMilestone"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "reference",
+                    "type_code",
+                    "type_group",
+                    "length",
+                    "latest_actual_milestone"
+                ],
+                "title": "WidgetContainer"
+            },
+            "WidgetCountry": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "iso_a2": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "iso_a2"
+                ],
+                "title": "WidgetCountry"
+            },
+            "WidgetLeg": {
+                "type": "object",
+                "properties": {
+                    "vessel_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "event_date": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "actual": {
+                        "type": "boolean"
+                    },
+                    "location": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetLocation"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "vessel_name",
+                    "event_date",
+                    "actual",
+                    "location"
+                ],
+                "title": "WidgetLeg"
+            },
+            "WidgetLocation": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "unlocode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "timezone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "country": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetCountry"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "point": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetPoint"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "unlocode",
+                    "timezone",
+                    "country",
+                    "point"
+                ],
+                "title": "WidgetLocation"
+            },
+            "WidgetMilestone": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "event_date": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "vessel_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "location": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetLocation"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "status",
+                    "event_date",
+                    "vessel_name",
+                    "location"
+                ],
+                "title": "WidgetMilestone"
+            },
+            "WidgetPoint": {
+                "type": "object",
+                "properties": {
+                    "lat": {
+                        "type": "number"
+                    },
+                    "lng": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "lat",
+                    "lng"
+                ],
+                "title": "WidgetPoint"
+            },
+            "WidgetSearchResult": {
+                "type": "object",
+                "properties": {
+                    "references": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "carrier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "booking_reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "bill_of_lading_reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "departure": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetLeg"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "arrival": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/WidgetLeg"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "containers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WidgetContainer"
+                        }
+                    },
+                    "tracks": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WidgetTrack"
+                        }
+                    },
+                    "details_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "The shipment in the entity's portal, on its blueprint's domain."
+                    }
+                },
+                "required": [
+                    "references",
+                    "carrier",
+                    "booking_reference",
+                    "bill_of_lading_reference",
+                    "departure",
+                    "arrival",
+                    "containers",
+                    "tracks",
+                    "details_url"
+                ],
+                "title": "WidgetSearchResult"
+            },
+            "WidgetTrack": {
+                "type": "object",
+                "properties": {
+                    "device_reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "readings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WidgetTrackReading"
+                        }
+                    }
+                },
+                "required": [
+                    "device_reference",
+                    "readings"
+                ],
+                "title": "WidgetTrack"
+            },
+            "WidgetTrackReading": {
+                "type": "object",
+                "properties": {
+                    "event_date": {
+                        "type": "string"
+                    },
+                    "lat": {
+                        "type": "number"
+                    },
+                    "lng": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "event_date",
+                    "lat",
+                    "lng"
+                ],
+                "title": "WidgetTrackReading"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
