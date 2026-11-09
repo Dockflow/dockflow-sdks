@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.lang }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: [typescript, python, csharp, java, php]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Generate
+        run: bash scripts/generate.sh ${{ matrix.lang }}
+
+      - if: matrix.lang == 'typescript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - if: matrix.lang == 'typescript'
+        working-directory: build/typescript
+        run: npm install --no-audit --no-fund && npm run build
+
+      - if: matrix.lang == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - if: matrix.lang == 'python'
+        working-directory: build/python
+        run: |
+          python -m pip install --quiet build
+          python -m build
+          python -m pip install --quiet dist/*.whl
+          python -c "import dockflow_sdk; print(dockflow_sdk.__version__)"
+
+      - if: matrix.lang == 'csharp'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - if: matrix.lang == 'csharp'
+        working-directory: build/csharp
+        run: dotnet pack src/Dockflow.Sdk/Dockflow.Sdk.csproj -c Release -o dist
+
+      - if: matrix.lang == 'java'
+        working-directory: build/java
+        run: mvn -B -q -DskipTests package
+
+      - if: matrix.lang == 'php'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - if: matrix.lang == 'php'
+        working-directory: build/php
+        run: |
+          composer install --no-interaction --no-progress
+          find lib -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
