@@ -1,8 +1,12 @@
 name: Sync spec and release
 
 on:
+  # Sent by Dockflow/infrastructure after every production deploy (docky and core-api ship there).
+  repository_dispatch:
+    types: [spec-updated]
+  # Safety net in case a dispatch is lost.
   schedule:
-    - cron: '17 * * * *'
+    - cron: '17 5 * * *'
   workflow_dispatch:
 
 concurrency:

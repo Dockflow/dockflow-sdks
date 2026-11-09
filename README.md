@@ -20,7 +20,7 @@ Authenticate with an API key (`Authorization: <key>`). The UAT sandbox is `https
 
 ## Releases
 
-Every hour `sync.yml` fetches the published spec. When it changed, it builds all five SDKs against it, picks the next version (`oasdiff`: a breaking change bumps the minor while on 0.x, anything else the patch), commits `spec/v3.json` and `VERSION`, tags `vX.Y.Z` and runs `publish.yml`:
+After every production deploy, Dockflow/infrastructure sends a `spec-updated` dispatch (plus a daily run as a safety net), and `sync.yml` fetches the published spec. When it changed, it builds all five SDKs against it, picks the next version (`oasdiff`: a breaking change bumps the minor while on 0.x, anything else the patch), commits `spec/v3.json` and `VERSION`, tags `vX.Y.Z` and runs `publish.yml`:
 
 | Registry | Auth |
 |---|---|
