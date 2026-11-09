@@ -38,6 +38,8 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: build/python/dist/
+          skip-existing: true
+          verbose: true
 
   nuget:
     runs-on: ubuntu-latest
@@ -63,7 +65,7 @@ jobs:
         with:
           user: mvalee
       - working-directory: build/csharp
-        run: dotnet nuget push "dist/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push "dist/*.nupkg" --skip-duplicate --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
 
   npm:
     runs-on: ubuntu-latest
@@ -90,7 +92,10 @@ jobs:
         # Trusted publishing (OIDC) once configured on npm; NPM_TOKEN only for the very first release.
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "@dockflow/sdk@$version" version >/dev/null 2>&1; then echo "@dockflow/sdk@$version already published"; exit 0; fi
+          npm publish --access public
 
   maven:
     runs-on: ubuntu-latest
@@ -115,7 +120,12 @@ jobs:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-        run: mvn -B -DskipTests deploy
+        run: |
+          version=$(tr -d '[:space:]' < ../../VERSION)
+          if curl -sfI "https://repo1.maven.org/maven2/com/dockflow/dockflow-sdk/$version/dockflow-sdk-$version.pom" >/dev/null; then
+            echo "com.dockflow:dockflow-sdk:$version already on Maven Central"; exit 0
+          fi
+          mvn -B -DskipTests deploy
 
   php:
     runs-on: ubuntu-latest
@@ -137,6 +147,7 @@ jobs:
           mkdir -p ~/.ssh && echo "$PHP_DEPLOY_KEY" > ~/.ssh/php_deploy && chmod 600 ~/.ssh/php_deploy
           export GIT_SSH_COMMAND="ssh -i ~/.ssh/php_deploy -o StrictHostKeyChecking=accept-new"
           git clone -q git@github.com:Dockflow/dockflow-php.git /tmp/php
+          if git -C /tmp/php rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then echo "dockflow-php already has $TAG"; exit 0; fi
           find /tmp/php -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a build/php/. /tmp/php/
           cd /tmp/php

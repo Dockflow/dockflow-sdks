@@ -41,7 +41,9 @@ jobs:
           node-version: '24'
       - if: matrix.lang == 'typescript'
         working-directory: build/typescript
-        run: npm install --no-audit --no-fund && npm run build
+        run: |
+          npm install --no-audit --no-fund && npm run build
+          node -e "const m=require('./dist'); for (const c of ['UpstreamApi','TradeflowsApi','DocumentsApi','WidgetApi']) if (typeof m[c] !== 'function') { console.error('missing export ' + c); process.exit(1) }"
 
       - if: matrix.lang == 'python'
         uses: actions/setup-python@v5
@@ -53,7 +55,7 @@ jobs:
           python -m pip install --quiet build
           python -m build
           python -m pip install --quiet dist/*.whl
-          python -c "import dockflow_sdk; print(dockflow_sdk.__version__)"
+          python -c "from dockflow_sdk import UpstreamApi, TradeflowsApi, DocumentsApi, WidgetApi; import dockflow_sdk; print(dockflow_sdk.__version__)"
 
       - if: matrix.lang == 'csharp'
         uses: actions/setup-dotnet@v4
