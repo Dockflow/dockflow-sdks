@@ -1,0 +1,84 @@
+name: Sync spec and release
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+      version: ${{ steps.diff.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the published spec
+        run: |
+          code=$(curl -sS -o /tmp/v3.json -w '%{http_code}' https://api.dockflow.com/v3/openapi.json)
+          [ "$code" = 200 ] || { echo "::error::spec not reachable (HTTP $code)"; exit 1; }
+          python3 -c "import json; d = json.load(open('/tmp/v3.json')); assert d['openapi'].startswith('3.')"
+      - name: Compare and decide the version
+        id: diff
+        run: |
+          if python3 -c "import json, sys; sys.exit(json.load(open('/tmp/v3.json')) != json.load(open('spec/v3.json')))"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          curl -fsSL https://github.com/oasdiff/oasdiff/releases/download/v1.37.0/oasdiff_1.37.0_linux_amd64.tar.gz | tar -xz oasdiff
+          if ./oasdiff breaking spec/v3.json /tmp/v3.json --fail-on ERR; then kind=feature; else kind=breaking; fi
+          version=$(python3 scripts/bump.py "$(cat VERSION)" "$kind")
+          cp /tmp/v3.json spec/v3.json
+          echo "$version" > VERSION
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "$kind change -> $version" >> "$GITHUB_STEP_SUMMARY"
+      - if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate
+          path: |
+            spec/v3.json
+            VERSION
+
+  verify:
+    needs: detect
+    if: needs.detect.outputs.changed == 'true'
+    uses: ./.github/workflows/ci.yml
+    with:
+      candidate: candidate
+
+  release:
+    needs: [detect, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate
+      - name: Commit, tag and push
+        run: |
+          git config user.name "dockflow-sdk-bot"
+          git config user.email "sysadmin@dockflow.com"
+          git add spec/v3.json VERSION
+          git commit -m "release: v${{ needs.detect.outputs.version }} (spec sync)"
+          git tag "v${{ needs.detect.outputs.version }}"
+          git push origin HEAD:main "v${{ needs.detect.outputs.version }}"
+
+  publish:
+    needs: [detect, release]
+    uses: ./.github/workflows/publish.yml
+    with:
+      ref: v${{ needs.detect.outputs.version }}
+    secrets: inherit
+    permissions:
+      contents: write
+      id-token: write

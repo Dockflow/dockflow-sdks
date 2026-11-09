@@ -1,0 +1,148 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Release tag to publish, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: bash scripts/generate.sh python
+      - working-directory: build/python
+        run: python -m pip install --quiet build && python -m build
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: build/python/dist/
+
+  nuget:
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: bash scripts/generate.sh csharp
+      - working-directory: build/csharp
+        run: dotnet pack src/Dockflow.Sdk/Dockflow.Sdk.csproj -c Release -o dist
+      - id: login
+        uses: NuGet/login@v1
+        with:
+          user: mvalee
+      - working-directory: build/csharp
+        run: dotnet nuget push "dist/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
+
+  npm:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest
+      - run: bash scripts/generate.sh typescript
+      - working-directory: build/typescript
+        run: npm install --no-audit --no-fund && npm run build
+      - working-directory: build/typescript
+        # Trusted publishing (OIDC) once configured on npm; NPM_TOKEN only for the very first release.
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  maven:
+    runs-on: ubuntu-latest
+    environment: maven
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - run: bash scripts/generate.sh java
+      - run: python3 scripts/maven_release.py build/java/pom.xml
+      - working-directory: build/java
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: mvn -B -DskipTests deploy
+
+  php:
+    runs-on: ubuntu-latest
+    environment: packagist
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: bash scripts/generate.sh php
+      - name: Push the PHP package to Dockflow/dockflow-php and tag it
+        env:
+          PHP_DEPLOY_KEY: ${{ secrets.PHP_DEPLOY_KEY }}
+          TAG: ${{ inputs.ref }}
+        run: |
+          mkdir -p ~/.ssh && echo "$PHP_DEPLOY_KEY" > ~/.ssh/php_deploy && chmod 600 ~/.ssh/php_deploy
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/php_deploy -o StrictHostKeyChecking=accept-new"
+          git clone -q git@github.com:Dockflow/dockflow-php.git /tmp/php
+          find /tmp/php -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a build/php/. /tmp/php/
+          cd /tmp/php
+          git config user.name "dockflow-sdk-bot"
+          git config user.email "sysadmin@dockflow.com"
+          git add -A
+          git commit -q -m "release: $TAG" || echo "no PHP changes"
+          git tag "$TAG"
+          git push -q origin HEAD:main "$TAG"
