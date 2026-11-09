@@ -38,40 +38,47 @@ props["container_reference"] = {
     "items": {**objs[0], "title": "ContainerReference"},
 }
 
-# Public SDK names: these become class and method names, so renaming them later breaks every caller.
-TAGS = {"TridentDocument": "Documents", "TridentDownstream": "Tradeflows",
-        "TridentUpstream": "Upstream", "WidgetSearch": "Widget"}
+# Public SDK names, keyed on method + path: those are the public contract, while docky's tags and
+# operationIds follow internal class names that get renamed. These names become SDK classes and
+# methods, so changing them later breaks every caller.
 OPERATIONS = {
-    "documents-types": "listDocumentTypes", "trident-document-post": "uploadDocument",
-    "trident-document-get": "getDocument", "trident-document-patch": "updateDocument",
-    "trident-document-delete": "deleteDocument", "tridentDownstream.post": "createTradeflows",
-    "tridentDownstream.delete": "deleteTradeflow", "tridentUpstream.get": "getUpstream",
-    "widget-search": "searchWidget",
+    ("get", "/v3/downstream/documents/types"): ("Documents", "listDocumentTypes"),
+    ("post", "/v3/downstream/documents"): ("Documents", "uploadDocument"),
+    ("get", "/v3/downstream/documents/{reference}"): ("Documents", "getDocument"),
+    ("patch", "/v3/downstream/documents/{reference}"): ("Documents", "updateDocument"),
+    ("delete", "/v3/downstream/documents/{reference}"): ("Documents", "deleteDocument"),
+    ("post", "/v3/downstream/tradeflows"): ("Tradeflows", "createTradeflows"),
+    ("delete", "/v3/downstream/tradeflows/{tradeflow_reference}"): ("Tradeflows", "deleteTradeflow"),
+    ("get", "/v3/upstream"): ("Upstream", "getUpstream"),
+    ("get", "/v3/widget/search"): ("Widget", "searchWidget"),
 }
 
 
-def public_name(name, capitalise):
-    words = [w for w in re.split(r"[^A-Za-z0-9]+|(?<=[a-z])(?=[A-Z])", name) if w and w.lower() != "trident"]
-    joined = "".join(w[:1].upper() + w[1:] for w in words)
-    return joined if capitalise else joined[:1].lower() + joined[1:]
+def derived(method, path):
+    """Name for an operation added after this table was written, so a new endpoint never blocks a release."""
+    words = [w for w in re.split(r"[^A-Za-z0-9]+", re.sub(r"\{[^}]*\}", "", path)) if w and w != "v3"]
+    tag = words[0].capitalize() if words else "Default"
+    op = method + "".join(w.capitalize() for w in words)
+    return tag, op
 
 
-for item in spec["paths"].values():
+used = set()
+for path, item in spec["paths"].items():
     for method, op in item.items():
-        if not isinstance(op, dict) or "operationId" not in op:
+        if not isinstance(op, dict) or method not in ("get", "post", "put", "patch", "delete"):
             continue
-        op["operationId"] = OPERATIONS.get(op["operationId"]) or public_name(op["operationId"], False)
-        op["tags"] = [TAGS.get(t) or public_name(t, True) for t in op.get("tags", [])]
-spec["tags"] = [{**t, "name": TAGS.get(t["name"]) or public_name(t["name"], True)} for t in spec.get("tags", [])]
+        tag, name = OPERATIONS.get((method, path)) or derived(method, path)
+        if name in used:
+            sys.exit(f"normalise: duplicate operation name {name} for {method.upper()} {path}")
+        used.add(name)
+        op["operationId"], op["tags"] = name, [tag]
+spec["tags"] = [{"name": t} for t in sorted({op["tags"][0] for item in spec["paths"].values()
+                                              for op in item.values() if isinstance(op, dict) and "tags" in op})]
 
 schemes = spec["components"].get("securitySchemes", {})
 if "TridentToken" in schemes:
-    schemes["ApiKey"] = {**schemes.pop("TridentToken"), "description": "A Dockflow API key, sent as `Authorization: Bearer <key>`."}
+    schemes["ApiKey"] = schemes.pop("TridentToken")
     spec["security"] = [{"ApiKey" if k == "TridentToken" else k: v for k, v in s.items()} for s in spec.get("security", [])]
-    for item in spec["paths"].values():
-        for op in item.values():
-            if isinstance(op, dict) and "security" in op:
-                op["security"] = [{"ApiKey" if k == "TridentToken" else k: v for k, v in s.items()} for s in op["security"]]
 
 json.dump(spec, open(dst, "w"), indent=1)
 print("normalise: narrowed 2 unions to list form, applied public names")
