@@ -16,7 +16,7 @@
     ],
     "security": [
         {
-            "TridentToken": []
+            "ApiKey": []
         }
     ],
     "paths": {
@@ -25,7 +25,7 @@
                 "operationId": "documents-types",
                 "summary": "List document types",
                 "tags": [
-                    "TridentDocument"
+                    "V3Document"
                 ],
                 "responses": {
                     "200": {
@@ -58,10 +58,10 @@
         },
         "/v3/downstream/documents": {
             "post": {
-                "operationId": "trident-document-post",
+                "operationId": "v3-document-post",
                 "summary": "Upload a document to a tradeflow",
                 "tags": [
-                    "TridentDocument"
+                    "V3Document"
                 ],
                 "requestBody": {
                     "required": true,
@@ -166,10 +166,10 @@
         },
         "/v3/downstream/documents/{reference}": {
             "get": {
-                "operationId": "trident-document-get",
+                "operationId": "v3-document-get",
                 "summary": "List the documents of a tradeflow",
                 "tags": [
-                    "TridentDocument"
+                    "V3Document"
                 ],
                 "parameters": [
                     {
@@ -293,10 +293,10 @@
                 }
             },
             "delete": {
-                "operationId": "trident-document-delete",
+                "operationId": "v3-document-delete",
                 "summary": "Delete a document",
                 "tags": [
-                    "TridentDocument"
+                    "V3Document"
                 ],
                 "parameters": [
                     {
@@ -337,10 +337,10 @@
                 }
             },
             "patch": {
-                "operationId": "trident-document-patch",
+                "operationId": "v3-document-patch",
                 "summary": "Update a document",
                 "tags": [
-                    "TridentDocument"
+                    "V3Document"
                 ],
                 "parameters": [
                     {
@@ -486,10 +486,10 @@
         },
         "/v3/downstream/tradeflows": {
             "post": {
-                "operationId": "tridentDownstream.post",
+                "operationId": "v3Downstream.post",
                 "summary": "Upsert tradeflows",
                 "tags": [
-                    "TridentDownstream"
+                    "V3Downstream"
                 ],
                 "requestBody": {
                     "required": true,
@@ -578,10 +578,10 @@
         },
         "/v3/downstream/tradeflows/{tradeflow_reference}": {
             "delete": {
-                "operationId": "tridentDownstream.delete",
+                "operationId": "v3Downstream.delete",
                 "summary": "Delete a tradeflow",
                 "tags": [
-                    "TridentDownstream"
+                    "V3Downstream"
                 ],
                 "parameters": [
                     {
@@ -661,10 +661,10 @@
         },
         "/v3/upstream": {
             "get": {
-                "operationId": "tridentUpstream.get",
+                "operationId": "v3Upstream.get",
                 "summary": "Poll upstream events",
                 "tags": [
-                    "TridentUpstream"
+                    "V3Upstream"
                 ],
                 "parameters": [
                     {
@@ -865,9 +865,9 @@
     },
     "components": {
         "securitySchemes": {
-            "TridentToken": {
+            "ApiKey": {
                 "type": "http",
-                "description": "A Trident token, `{env}_{entity-slug}_{secret}`.",
+                "description": "An API key, `{env}_{entity-slug}_{secret}`.",
                 "scheme": "bearer"
             }
         },
