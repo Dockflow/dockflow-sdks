@@ -30,7 +30,7 @@ for lang in ${*:-typescript python csharp java php}; do
     python) gen python python \
       "packageName=dockflow_sdk,projectName=dockflow-sdk,packageVersion=$VERSION,packageUrl=$REPO" ;;
     csharp) gen csharp csharp \
-      "packageName=Dockflow.Sdk,packageVersion=$VERSION,library=httpclient,targetFramework=netstandard2.0,packageCompany=Dockflow,packageAuthors=Dockflow,packageTitle=Dockflow API v3 SDK,licenseId=MIT,packageTags=dockflow container-tracking logistics" ;;
+      "packageName=Dockflow.Sdk,packageVersion=$VERSION,packageDescription=Client for the Dockflow API v3,library=httpclient,targetFramework=netstandard2.0,packageCompany=Dockflow,packageAuthors=Dockflow,packageTitle=Dockflow API v3 SDK,licenseId=MIT,packageTags=dockflow container-tracking logistics" ;;
     java) gen java java \
       "groupId=com.dockflow,artifactId=dockflow-sdk,artifactVersion=$VERSION,invokerPackage=com.dockflow.sdk,apiPackage=com.dockflow.sdk.api,modelPackage=com.dockflow.sdk.model,library=native,artifactUrl=$REPO,artifactDescription=Dockflow API v3 SDK,developerName=Dockflow,developerEmail=sysadmin@dockflow.com,developerOrganization=Dockflow,developerOrganizationUrl=https://dockflow.com,scmConnection=scm:git:$REPO.git,scmDeveloperConnection=scm:git:$REPO.git,scmUrl=$REPO,licenseName=MIT,licenseUrl=https://opensource.org/licenses/MIT" ;;
     php) gen php php \
