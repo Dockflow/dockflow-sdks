@@ -37,4 +37,11 @@ for lang in ${*:-typescript python csharp java php}; do
       "invokerPackage=Dockflow\\Sdk,composerPackageName=dockflow/dockflow-sdk,artifactVersion=$VERSION,licenseName=MIT" ;;
     *) echo "unknown language: $lang" >&2; exit 1 ;;
   esac
+  python3 "$ROOT/scripts/readme.py" "$lang" "$OUT/$lang/README.md" "$VERSION"
 done
+
+csproj="$OUT/csharp/src/Dockflow.Sdk/Dockflow.Sdk.csproj"
+if [ -f "$csproj" ] && ! grep -q PackageReadmeFile "$csproj"; then
+  sed -i '0,/<\/PropertyGroup>/s|</PropertyGroup>|  <PackageReadmeFile>README.md</PackageReadmeFile>\n  </PropertyGroup>|' "$csproj"
+  sed -i 's|</Project>|  <ItemGroup>\n    <None Include="../../README.md" Pack="true" PackagePath="/" />\n  </ItemGroup>\n</Project>|' "$csproj"
+fi
