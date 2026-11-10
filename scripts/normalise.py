@@ -75,6 +75,8 @@ for path, item in spec["paths"].items():
 spec["tags"] = [{"name": t} for t in sorted({op["tags"][0] for item in spec["paths"].values()
                                               for op in item.values() if isinstance(op, dict) and "tags" in op})]
 
+spec["info"]["description"] = "Client for the Dockflow API v3: upstream events, tradeflows, documents and the widget."
+
 schemes = spec["components"].get("securitySchemes", {})
 if "TridentToken" in schemes:
     schemes["ApiKey"] = schemes.pop("TridentToken")

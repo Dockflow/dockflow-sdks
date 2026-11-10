@@ -91,9 +91,6 @@ jobs:
       - working-directory: build/typescript
         run: npm install --no-audit --no-fund && npm run build
       - working-directory: build/typescript
-        # Trusted publishing (OIDC) once configured on npm; NPM_TOKEN only for the very first release.
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           version=$(node -p "require('./package.json').version")
           if npm view "@dockflow/sdk@$version" version >/dev/null 2>&1; then echo "@dockflow/sdk@$version already published"; exit 0; fi
