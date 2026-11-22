@@ -79,8 +79,6 @@ jobs:
         with:
           client-id: Iv23liafAZSFwfbJIeq6  # dockflow-deployer
           private-key: ${{ secrets.GH_DEPLOY_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
       - uses: actions/checkout@v4
         with:
           token: ${{ steps.app_token.outputs.token }}
