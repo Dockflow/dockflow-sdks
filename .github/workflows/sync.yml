@@ -72,7 +72,18 @@ jobs:
     permissions:
       contents: write
     steps:
+      # The org ruleset on main refuses GITHUB_TOKEN; dockflow-deployer is a bypass actor.
+      - name: Mint an installation token for this repository
+        id: app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: Iv23liafAZSFwfbJIeq6  # dockflow-deployer
+          private-key: ${{ secrets.GH_DEPLOY_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
       - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app_token.outputs.token }}
       - uses: actions/download-artifact@v4
         with:
           name: candidate
@@ -83,7 +94,8 @@ jobs:
           git add spec/v3.json VERSION
           git diff --cached --quiet || git commit -m "release: v${{ needs.detect.outputs.version }} (spec sync)"
           git tag "v${{ needs.detect.outputs.version }}"
-          git push origin HEAD:main "v${{ needs.detect.outputs.version }}"
+          # A refused branch must not leave the tag behind: the next run would compute the same version and collide.
+          git push --atomic origin HEAD:main "v${{ needs.detect.outputs.version }}"
 
   publish:
     needs: [detect, release]
