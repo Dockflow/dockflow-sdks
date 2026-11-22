@@ -138,14 +138,21 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: bash scripts/generate.sh php
+      # The org ruleset on main refuses the deploy key; dockflow-deployer is a bypass actor.
+      - name: Mint an installation token for Dockflow/dockflow-php
+        id: app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: Iv23liafAZSFwfbJIeq6  # dockflow-deployer
+          private-key: ${{ secrets.GH_DEPLOY_APP_PRIVATE_KEY }}
+          owner: Dockflow
+          repositories: dockflow-php
       - name: Push the PHP package to Dockflow/dockflow-php and tag it
         env:
-          PHP_DEPLOY_KEY: ${{ secrets.PHP_DEPLOY_KEY }}
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
           TAG: ${{ inputs.ref }}
         run: |
-          mkdir -p ~/.ssh && echo "$PHP_DEPLOY_KEY" > ~/.ssh/php_deploy && chmod 600 ~/.ssh/php_deploy
-          export GIT_SSH_COMMAND="ssh -i ~/.ssh/php_deploy -o StrictHostKeyChecking=accept-new"
-          git clone -q git@github.com:Dockflow/dockflow-php.git /tmp/php
+          git clone -q "https://x-access-token:${GH_TOKEN}@github.com/Dockflow/dockflow-php.git" /tmp/php
           if git -C /tmp/php rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then echo "dockflow-php already has $TAG"; exit 0; fi
           find /tmp/php -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a build/php/. /tmp/php/
@@ -155,4 +162,4 @@ jobs:
           git add -A
           git commit -q -m "release: $TAG" || echo "no PHP changes"
           git tag "$TAG"
-          git push -q origin HEAD:main "$TAG"
+          git push -q --atomic origin HEAD:main "$TAG"
