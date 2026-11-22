@@ -164,6 +164,72 @@
                 }
             }
         },
+        "/v3/downstream/documents/upload-url": {
+            "post": {
+                "operationId": "v3-document-upload-url",
+                "summary": "Get a link to upload a document's file to",
+                "tags": [
+                    "V3Document"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DocumentUploadUrlRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "PUT the raw file to upload_url, without an API key, before it expires. It can be used once.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "upload_url": {
+                                            "type": "string"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "const": "PUT"
+                                        },
+                                        "expires_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "upload_url",
+                                        "method",
+                                        "expires_at"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The body is not a JSON object, or a field is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "Content was not a valid JSON object."
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v3/downstream/documents/{reference}": {
             "get": {
                 "operationId": "v3-document-get",
@@ -466,6 +532,177 @@
                                             "const": "Content was not a valid JSON string."
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No document with this id is visible to the token's entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Document not found."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/downstream/documents/{reference}/download-url": {
+            "get": {
+                "operationId": "v3-document-download-url",
+                "summary": "Get a short-lived link to a document's file",
+                "tags": [
+                    "V3Document"
+                ],
+                "parameters": [
+                    {
+                        "name": "reference",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A signed link that downloads the file without an API key until it expires.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        },
+                                        "download_url": {
+                                            "type": "string"
+                                        },
+                                        "expires_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "filename",
+                                        "download_url",
+                                        "expires_at"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "The document exists but its file is no longer stored.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "The file of this document is no longer stored."
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "This environment cannot sign download links.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Download links are unavailable."
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No document with this id is visible to the token's entity.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "Document not found."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/downstream/documents/{reference}/content": {
+            "get": {
+                "operationId": "v3-document-content",
+                "summary": "Get a document's file, base64-encoded",
+                "tags": [
+                    "V3Document"
+                ],
+                "parameters": [
+                    {
+                        "name": "reference",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The file, in the shape POST /v3/downstream/documents accepts.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        },
+                                        "document_filename": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "document_extension": {
+                                            "type": "string"
+                                        },
+                                        "document_type": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "document_payload_base64": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "filename",
+                                        "document_filename",
+                                        "document_extension",
+                                        "document_type",
+                                        "document_payload_base64"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "The document exists but its file is no longer stored.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "The file of this document is no longer stored."
                                 }
                             }
                         }
@@ -942,6 +1179,54 @@
                     "document_payload_base64"
                 ],
                 "title": "DocumentUpload"
+            },
+            "DocumentUploadUrlRequest": {
+                "type": "object",
+                "properties": {
+                    "tradeflow_reference": {
+                        "type": "string",
+                        "description": "The tradeflow to attach the document to.",
+                        "examples": [
+                            "PO4564268"
+                        ]
+                    },
+                    "document_extension": {
+                        "type": "string",
+                        "enum": [
+                            "pdf",
+                            "doc",
+                            "docx",
+                            "xls",
+                            "xlsx",
+                            "jpg",
+                            "jpeg",
+                            "png",
+                            "gif",
+                            "bmp",
+                            "tif",
+                            "tiff",
+                            "svg",
+                            "webp"
+                        ]
+                    },
+                    "document_type": {
+                        "type": "string",
+                        "description": "A type name from GET /v3/downstream/documents/types. Unknown or omitted: no type."
+                    },
+                    "document_filename": {
+                        "type": "string",
+                        "description": "File name without extension, shown in Dockflow."
+                    },
+                    "container_reference": {
+                        "type": "string",
+                        "description": "Links the document to one container of the tradeflow."
+                    }
+                },
+                "required": [
+                    "tradeflow_reference",
+                    "document_extension"
+                ],
+                "title": "DocumentUploadUrlRequest"
             },
             "DownstreamTradeflow": {
                 "type": "object",
