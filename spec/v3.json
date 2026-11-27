@@ -1617,6 +1617,36 @@
                             },
                             "is_active": {
                                 "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        }
+                    },
+                    "partners": {
+                        "type": "array",
+                        "description": "The other organisations on this tradeflow, oldest link first. Your own organisation is not listed.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "roles": {
+                                    "type": "array",
+                                    "description": "Lowercased, e.g. client, forwarder.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "reference": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "description": "That partner's own reference for this tradeflow."
+                                }
                             }
                         }
                     },
